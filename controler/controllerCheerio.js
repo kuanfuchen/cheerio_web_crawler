@@ -1,6 +1,10 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
-const puppeteer = require('puppeteer'); 
+// const puppeteer = require('puppeteer'); 
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+const { scrollPageToBottom } = require('puppeteer-autoscroll-down')
+puppeteer.use(StealthPlugin());
 const handleSuccess = require('../service/handleSuccess');
 const handleFail = require('../service/handleFail');
 const bankExchangeRate = (req,res ,next) =>{
@@ -80,7 +84,58 @@ const crawelPtt = (req, res, next)=>{
     handleFail(res, '爬蟲失敗')
   }
 }
+const crawelShopee = async(req, res, next)=>{
+  const brower = await puppeteer.launch({
+    headless: false,
+    defaultViewport:null,
+    args:[
+      "--window-size=1920,1080"
+    ],
+  });
+  const page = await brower.newPage();
+  // await page.goto("https://bot.sannysoft.com/")
+  await page.goto("https://shopee.tw/search?keyword=%E5%8D%87%E9%99%8D%E6%A1%8C",{
+    waitUntil:"domcontentloaded"
+  })
+  await page.addStyleTag({
+    content:"#main{width: 1920px}"
+  })
+  await page.waitForSelector(".shopee-search-item-result__item");
+  await page.waitForSelector("img")
+  await scrollPageToBottom(page, {
+    size:500,
+    delay:300
+  });
+  // page.click('#xxxx')
+  // page.input()
+  // page.type('#email',EMAIL);
+  // page.waitForTimeout(3000);
+  // await page.evaluate(()=>{
+  //   document.querySelector('#quality').value = '';
+  // });
+  // const value = await page.$eval('#xxx',(el)=>el.textContent().trim());//輸出該元素text
+  const collectedData = await page.evaluate(async()=>{
+    const imgSelector = document.querySelectorAll('.shopee-search-item-result__item');
+    console.log(imgSelector.length)
+    const data = [];
+    for(let i = 0 ; imgSelector.length > i ; i++){
+      const img = imgSelector[i].querySelector("img");
+      const link = imgSelector[i].querySelector("a");
+      data.push({
+        img:img.src,
+        text:img.alt,
+        href:link.href
+      })
+      console.log(data)
+    }
+    return data
+  });
+  // console.log(collectedData,'collectedData')
+  handleSuccess(res, collectedData);
+  // handleSuccess(res, {"message":"success"})
+}
 module.exports =  {
   bankExchangeRate,
-  crawelPtt
+  crawelPtt,
+  crawelShopee,
 }
