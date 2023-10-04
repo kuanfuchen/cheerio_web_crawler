@@ -7,6 +7,7 @@ const { scrollPageToBottom } = require('puppeteer-autoscroll-down')
 puppeteer.use(StealthPlugin());
 const handleSuccess = require('../service/handleSuccess');
 const handleFail = require('../service/handleFail');
+const { get_institutional_investor_buyAndSell } = require('../utils/institutional_investor_socket');
 const bankExchangeRate = (req,res ,next) =>{
   try{
   const targetUrl = req.body.targetUrl;
@@ -130,12 +131,23 @@ const crawelShopee = async(req, res, next)=>{
     }
     return data
   });
-  // console.log(collectedData,'collectedData')
   handleSuccess(res, collectedData);
-  // handleSuccess(res, {"message":"success"})
+}
+const institutional_investor_buyAndSell_Socket = async(req,res) =>{
+  try{
+    const socketID = req.body.target_socketID;
+    const socketDATA = req.body.target_socketDATA;
+    await get_institutional_investor_buyAndSell(res, socketID, socketDATA);
+    // const socket_DATA = await get_institutional_investor_buyAndSell(socketID, socketDATA);
+    // console.log(socket_DATA, 'socket_DATA')
+    // typeof socket_DATA !== 'string' ? handleSuccess(res, socket_DATA) : handleFail(res, '爬蟲失敗');
+  }catch(err){
+    handleFail(res, '爬蟲失敗')
+  }
 }
 module.exports =  {
   bankExchangeRate,
   crawelPtt,
   crawelShopee,
+  institutional_investor_buyAndSell_Socket,
 }
