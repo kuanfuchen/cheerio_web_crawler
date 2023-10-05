@@ -4,7 +4,6 @@ const handleSuccess = require('../service/handleSuccess.js');
 const handleFail = require('../service/handleFail.js');
 const get_institutional_investor_buyAndSell =(res, stockID = '加權指數' , date = 'DATE')=>{
   try{
-
     axios.get(`https://goodinfo.tw/tw/ShowBuySaleChart.asp?STOCK_ID=${stockID}&CHT_CAT=${date}`)
       .then(async(response)=>{
         const $ = cheerio.load(response.data);
@@ -12,8 +11,8 @@ const get_institutional_investor_buyAndSell =(res, stockID = '加權指數' , da
         const indexElement = $('table:nth-of-type(1) tbody tr:nth-of-type(1)');
         indexElement.each((i, row)=>{
           const td = $(row).find('td');
-          console.log(td.eq(0).text().trim())
-        })
+          console.log(td.eq(0).text().trim());
+        });
       // 提取上市加权指数数据
       // const indexValue = indexElement.text().trim();
       // console.log(indexValue,'indexValue')
