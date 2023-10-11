@@ -2,27 +2,25 @@ const cheerio = require("cheerio");
 const axios = require("axios");
 const handleSuccess = require('../service/handleSuccess.js');
 const handleFail = require('../service/handleFail.js');
+const handleTodayStock = require('./handleTodayStock.js');
+// import cheerio from 'cheerio';
+// import axios from
 const get_institutional_investor_buyAndSell =(res, stockID = '加權指數' , date = 'DATE')=>{
   try{
     axios.get(`https://goodinfo.tw/tw/ShowBuySaleChart.asp?STOCK_ID=${stockID}&CHT_CAT=${date}`)
       .then(async(response)=>{
         const $ = cheerio.load(response.data);
         const institutional_investor_buyAndSell_info = [];
-        // const indexElement = $('table:nth-of-type(1) tbody tr:nth-of-type(1)').slice(6);
-        // const indexValue = indexElement.text().trim();
-        // console.log(indexValue,'indexValue');
         const indexElement = $('table.b1.r10.box_shadow');
         const indexValue = indexElement.eq(0).text().trim();
-        institutional_investor_buyAndSell_info.push({title:indexValue})
+        const stockTodayIndex = await handleTodayStock(indexValue);
+        institutional_investor_buyAndSell_info.push({ title: indexValue });
         // 提取上市加权指数数据
         // const lastRow = $('table:nth-of-type(2) tbody tr:last-of-type');
         // const buyIn = lastRow.find('td:nth-child(10)').text().trim(); // 買進
         // const sellOver = lastRow.find('td:nth-child(11)').text().trim(); // 賣超
         // const netBuy = lastRow.find('td:nth-child(12)').text().trim(); // 買賣超
         // // 输出提取的数据
-        // console.log('買進:', buyIn);
-        // console.log('賣超:', sellOver);
-        // console.log('買賣超:', netBuy);
         const socketInfo = $("#divBuySaleDetail table tbody tr").slice(2);
         socketInfo.each(async(i, row) => { 
           const td = await $(row).find('td');
@@ -31,24 +29,24 @@ const get_institutional_investor_buyAndSell =(res, stockID = '加權指數' , da
           const upsAndDown = td.eq(2).text().trim();
           const tradingVol = td.eq(3).text().trim();
           const foreign_capital = {
-            buy: td.eq(4).text().trim(),
-            sell: td.eq(5).text().trim(),
-            total: td.eq(6).text().trim()
+            total: td.eq(4).text().trim(),
+            buy: td.eq(5).text().trim(),
+            sell: td.eq(6).text().trim()
           };
           const investment_banks = {
-            buy:td.eq(7).text().trim(),
-            sell:td.eq(8).text().trim(),
-            total:td.eq(9).text().trim()
+            total:td.eq(7).text().trim(),
+            buy:td.eq(8).text().trim(),
+            sell:td.eq(9).text().trim()
           };
           const dealer = {
-            buy: td.eq(10).text().trim(),
-            sell: td.eq(11).text().trim(),
-            total: td.eq(12).text().trim()
+            total: td.eq(10).text().trim(),
+            buy: td.eq(11).text().trim(),
+            sell: td.eq(12).text().trim()
           };
           const institutional_investor = {
-            buy:td.eq(13).text().trim(),
-            sell:td.eq(14).text().trim(),
-            total:td.eq(15).text().trim(),
+            total:td.eq(13).text().trim(),
+            buy:td.eq(14).text().trim(),
+            sell:td.eq(15).text().trim(),
           };
           institutional_investor_buyAndSell_info.push({
             date:term,
@@ -67,7 +65,7 @@ const get_institutional_investor_buyAndSell =(res, stockID = '加權指數' , da
     // return 'catch error'
     handleFail(res, 'catch error')
   }
-}
+};
 module.exports =  {
   get_institutional_investor_buyAndSell,
 };
