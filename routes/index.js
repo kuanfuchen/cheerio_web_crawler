@@ -10,7 +10,8 @@ router.post('/crawelPtt', function(req, res, next) {
 router.get('/crawelShopee', function(req, res, next) {
   crawelShopee(req, res, next);
 });
-router.post('/socket', (req,res)=>{
+router.get('/socket', (req,res)=>{
+  console.log(3344)
   institutional_investor_buyAndSell_Socket(req,res);
 })
 module.exports = router;
